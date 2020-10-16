@@ -6,9 +6,10 @@ This is blockchain node software for [UBIK.hr](https://ubik.hr), a Croatian self
 
 TBD
 
-## Features
+## Included features
 
-TBD
+- Utility (batch tx)
+- Vesting (vested transfer, gradual unlock of funds)
 
 ## Joining as a validator
 

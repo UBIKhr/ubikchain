@@ -51,6 +51,10 @@ sp-offchain = { default-features = false, version = '2.0.0' }
 sp-runtime = { default-features = false, version = '2.0.0' }
 sp-session = { default-features = false, version = '2.0.0' }
 sp-std = { default-features = false, version = '2.0.0' }
+
+pallet-utility = { default-features = false, version = '2.0.0' }
+pallet-vesting = { default-features = false, version = '2.0.0' }
+
 sp-transaction-pool = { default-features = false, version = '2.0.0' }
 sp-version = { default-features = false, version = '2.0.0' }
 
@@ -61,6 +65,7 @@ runtime-benchmarks = [
     'frame-benchmarking',
     'frame-support/runtime-benchmarks',
     'frame-system-benchmarking',
+    "pallet-utility/runtime-benchmarks",
     'frame-system/runtime-benchmarks',
     'pallet-balances/runtime-benchmarks',
     'pallet-timestamp/runtime-benchmarks',
@@ -93,4 +98,6 @@ std = [
     'sp-std/std',
     'sp-transaction-pool/std',
     'sp-version/std',
+    'pallet-utility/std',
+    'pallet-vesting/std',
 ]
