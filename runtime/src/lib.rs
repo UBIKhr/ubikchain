@@ -530,9 +530,7 @@ impl_runtime_apis! {
 
 #[cfg(test)]
 mod tests {
-
-	use frame_support::{impl_outer_origin, parameter_types, sp_io};
-	use pallet_balances::Call as BalancesCall;
+	use frame_support::{assert_ok, impl_outer_origin, parameter_types, sp_io};
 	use sp_core::H256;
 	use sp_runtime::{
 		testing::Header,
@@ -540,14 +538,33 @@ mod tests {
 		Perbill,
 	};
 
-	impl_outer_origin! {
-		pub enum Origin for TestRuntime {}
-	}
-
-	//type Balances = pallet_balances::Module<Test>;
-
 	#[derive(Clone, PartialEq, Eq, Debug)]
 	pub struct TestRuntime;
+
+	impl_outer_origin! {
+		pub enum Origin for TestRuntime where system = frame_system {}
+	}
+
+	type System = frame_system::Module<TestRuntime>;
+	type Balances = pallet_balances::Module<TestRuntime>;
+	type AccountId = u64;
+	type Balance = u128;
+
+	// Configure a mock runtime to test the pallet.
+	parameter_types! {
+		pub const ExistentialDeposit: u128 = 1;
+		pub const MaxLocks: u32 = 50;
+	}
+
+	impl pallet_balances::Trait for TestRuntime {
+		type MaxLocks = MaxLocks;
+		type Balance = Balance;
+		type DustRemoval = ();
+		type Event = ();
+		type ExistentialDeposit = ExistentialDeposit;
+		type AccountStore = System;
+		type WeightInfo = ();
+	}
 
 	parameter_types! {
 		pub const BlockHashCount: u64 = 250;
@@ -556,7 +573,6 @@ mod tests {
 		pub const AvailableBlockRatio: Perbill = Perbill::one();
 	}
 
-	// First, implement the system pallet's configuration trait for `TestRuntime`
 	impl frame_system::Trait for TestRuntime {
 		type Origin = Origin;
 		type Index = u64;
@@ -564,7 +580,7 @@ mod tests {
 		type BlockNumber = u64;
 		type Hash = H256;
 		type Hashing = BlakeTwo256;
-		type AccountId = u64;
+		type AccountId = AccountId;
 		type Lookup = IdentityLookup<Self::AccountId>;
 		type Header = Header;
 		type Event = ();
@@ -573,7 +589,7 @@ mod tests {
 		type MaximumBlockLength = MaximumBlockLength;
 		type AvailableBlockRatio = AvailableBlockRatio;
 		type Version = ();
-		type AccountData = ();
+		type AccountData = pallet_balances::AccountData<Balance>;
 		type OnNewAccount = ();
 		type OnKilledAccount = ();
 		type BaseCallFilter = ();
@@ -585,29 +601,26 @@ mod tests {
 		type SystemWeightInfo = ();
 	}
 
-	// Then implement our own pallet's configuration trait for `TestRuntime`
-	// impl Trait for TestRuntime {
-	// 	type Event = ();
-	// }
-
-	// Assign back to type variables so we can make dispatched calls of these modules later.
-	//pub type System = frame_system::Module<TestRuntime>;
-	//pub type TestPallet = Module<TestRuntime>;
-
-	pub struct ExtBuilder;
-
-	impl ExtBuilder {
-		pub fn build() -> sp_io::TestExternalities {
-			//	let mut storage = frame_system::GenesisConfig::default()
-			let storage = frame_system::GenesisConfig::default()
-				.build_storage::<TestRuntime>()
-				.unwrap();
-			sp_io::TestExternalities::from(storage)
+	pub fn new_test_ext() -> sp_io::TestExternalities {
+		let mut t = frame_system::GenesisConfig::default()
+			.build_storage::<TestRuntime>()
+			.unwrap();
+		pallet_balances::GenesisConfig::<TestRuntime> {
+			balances: vec![(1, 10), (2, 10), (3, 10), (4, 10), (5, 2)],
 		}
+		.assimilate_storage(&mut t)
+		.unwrap();
+		let mut ext = sp_io::TestExternalities::new(t);
+		ext.execute_with(|| System::set_block_number(1));
+		ext
 	}
 
 	#[test]
-	fn test_eq() {
-		ExtBuilder::build().execute_with(|| assert_eq!(2, 2))
+	fn basic_transfer() {
+		new_test_ext().execute_with(|| {
+			assert_ok!(Balances::transfer(Origin::signed(1), 2, 5));
+			assert_eq!(Balances::free_balance(1), 5);
+			assert_eq!(Balances::free_balance(2), 15);
+		});
 	}
 }
