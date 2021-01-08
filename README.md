@@ -4,6 +4,8 @@ This is blockchain node software for [UBIK.hr](https://ubik.hr), a Croatian self
 
 The currency is defined as UBIK, using 12 decimals with an SS58 format of 2 (matching Kusama addresses).
 
+Build plan: https://hackmd.io/4Tcn8biMScqYxTBFOQMA6Q?view
+
 ## Running
 
 You need Rust installed. Instructions here: https://substrate.dev/docs/en/tutorials/create-your-first-substrate-chain/setup or just run `curl https://getsubstrate.io -sSf | bash -s -- --fast`
